@@ -2,65 +2,79 @@ import bpy, mathutils
 
 
 bl_info = {
-    'name': 'Curve Remove Dobles',
+    'name': 'Curve Remove Doubles',
     'author': 'Michael Soluyanov',
-    'version': (1, 0),
-    'blender': (2, 7, 8),
-    'location': 'View3D > Specials (W) > Remove Dobles',
-    'description': 'Adds comand "Remove Dobles" for curves',
+    'version': (1, 1),
+    'blender': (2, 8, 0),
+    'location': 'View3D > Context menu (W/RMB) > Remove Doubles',
+    'description': 'Adds comand "Remove Doubles" for curves',
     'category': 'Object'
 }
 
-def CurveRemvDbsOperator(obj, distance=0.01):
-    dellist=[]
+def main(context, distance = 0.01):
+    
+    obj = context.active_object
+    dellist = []
+    
     for spline in obj.data.splines: 
-        if(len(spline.bezier_points)>2):
+        if len(spline.bezier_points) > 1:
             for i in range(0, len(spline.bezier_points)): 
                 
-                
-                if(i==0):
-                    ii=len(spline.bezier_points)-1;
+                if i == 0:
+                    ii = len(spline.bezier_points) - 1
                 else:        
-                    ii=i-1;
+                    ii = i - 1
                     
                 dot = spline.bezier_points[i];
                 dot1 = spline.bezier_points[ii];   
                     
-                while (dot1 in dellist and dot1!=dot):
-                    ii-=1;
-                    if(ii<0): 
-                        ii=len(spline.bezier_points)-1;
-                    dot1 = spline.bezier_points[ii]; 
+                while dot1 in dellist and i != ii:
+                    ii -= 1
+                    if ii < 0: 
+                        ii = len(spline.bezier_points)-1
+                    dot1 = spline.bezier_points[ii]
                     
-                if (dot.select_control_point and dot1.select_control_point and (i!=0 or spline.use_cyclic_u)):   
-                    if (dot.co-dot1.co).length<distance:
-                        dot1.handle_right_type= "FREE"
-                        dot1.handle_right=dot.handle_right
-                        dot1.co=(dot.co+dot1.co)/2
+                if dot.select_control_point and dot1.select_control_point and (i!=0 or spline.use_cyclic_u):   
+                    
+                    if (dot.co-dot1.co).length < distance:
+                        # remove points and recreate hangles
+                        dot1.handle_right_type = "FREE"
+                        dot1.handle_right = dot.handle_right
+                        dot1.co = (dot.co + dot1.co) / 2
                         dellist.append(dot)
-
+                        
+                    else:
+                        # Handles that are on main point position converts to vector,
+                        # if next handle are also vector
+                        if dot.handle_left_type == 'VECTOR' and (dot1.handle_right - dot1.co).length < distance:
+                            dot1.handle_right_type = "VECTOR"
+                        if dot1.handle_right_type == 'VECTOR' and (dot.handle_left - dot.co).length < distance:
+                            dot.handle_left_type = "VECTOR"  
+                      
+                            
     
-    bpy.ops.curve.select_all(action='DESELECT')
+    bpy.ops.curve.select_all(action = 'DESELECT')
 
     for dot in dellist:
-        dot.select_control_point=True
+        dot.select_control_point = True
         
-    count=len(dellist)
+    count = len(dellist)
     
-    bpy.ops.curve.delete(type='VERT')
+    bpy.ops.curve.delete(type = 'VERT')
     
-    bpy.ops.curve.select_all(action='SELECT')
+    bpy.ops.curve.select_all(action = 'SELECT')
     
     return count
     
 
 
 class CurveRemvDbs(bpy.types.Operator):
+    """Merge consecutive points that are near to each other"""
     bl_idname = 'curve.remove_doubles'
     bl_label = 'Remove Doubles'
     bl_options = {'REGISTER', 'UNDO'}
 
-    distance = bpy.props.FloatProperty(name='Distance', default=0.01, min=0.0001, max=10.0, step=1)
+    distance: bpy.props.FloatProperty(name = 'Distance', default = 0.01, min = 0.0001, max = 10.0, step = 1)
 
     @classmethod
     def poll(cls, context):
@@ -68,7 +82,7 @@ class CurveRemvDbs(bpy.types.Operator):
         return (obj and obj.type == 'CURVE')
 
     def execute(self, context):
-        removed=CurveRemvDbsOperator(context.active_object, self.distance)
+        removed=main(context, self.distance)
         self.report({'INFO'}, "Removed %d bezier points" % removed)
         return {'FINISHED'}
 
@@ -79,14 +93,15 @@ def menu_func(self, context):
     self.layout.operator(CurveRemvDbs.bl_idname, text='Remove Doubles')
 
 def register():
-    bpy.utils.register_module(__name__)
+    bpy.utils.register_class(CurveRemvDbs)
     bpy.types.VIEW3D_MT_edit_curve_specials.append(menu_func)
 
 def unregister():
-    bpy.utils.unregister_module(__name__)
+    bpy.utils.unregister_class(CurveRemvDbs)
     bpy.types.VIEW3D_MT_edit_curve_specials.remove(menu_func)
 
 if __name__ == "__main__":
     register()
+
 
 
