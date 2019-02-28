@@ -5,7 +5,7 @@ bl_info = {
     'name': 'Curve Remove Doubles',
     'author': 'Michael Soluyanov',
     'version': (1, 1),
-    'blender': (2, 8, 0),
+    'blender': (2, 80, 0),
     'location': 'View3D > Context menu (W/RMB) > Remove Doubles',
     'description': 'Adds comand "Remove Doubles" for curves',
     'category': 'Object'
