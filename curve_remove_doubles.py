@@ -94,11 +94,11 @@ def menu_func(self, context):
 
 def register():
     bpy.utils.register_class(CurveRemvDbs)
-    bpy.types.VIEW3D_MT_edit_curve_specials.append(menu_func)
+    bpy.types.VIEW3D_MT_edit_curve_context_menu.append(menu_func)
 
 def unregister():
     bpy.utils.unregister_class(CurveRemvDbs)
-    bpy.types.VIEW3D_MT_edit_curve_specials.remove(menu_func)
+    bpy.types.VIEW3D_MT_edit_curve_context_menu.remove(menu_func)
 
 if __name__ == "__main__":
     register()
