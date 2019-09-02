@@ -1,4 +1,7 @@
 # Curve remove doubles addon for Blender 3D
+
+# Curve remove doubles merged with Simplify Curves+ and now part of blender since 2.80 
+
 Adds comand "Remove Dobles" for curves in Blender 3D
 <p>Sometimes in exported curves in Blender, you can note bugs: some of the curve may not be traced, or artifacts on the extruded wall:</p>
 
